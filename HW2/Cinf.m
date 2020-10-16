@@ -4,6 +4,8 @@ function Cinf
 % M. Herceg, Automatic Control Laboratory, ETH Zurich 2014
 %
 % requires MPT3
+% run startup.m and tbxmanager.m in the toolboxes folder to run the script 
+%
 
 close all
 clear all
@@ -76,7 +78,7 @@ axis([model.x.min(1),model.x.max(1),model.x.min(2),model.x.max(2)])
 set(gca,'LineWidth',axeswidth)
 set(gca,'FontSize', tick_font_size);
 xt = transpose(-10:5:10);
-yt = transpose(-10:plot(1:N, squeeze(x_star(1,1,1:N) - x_noisy(1,1,1:N)));5:10);
+yt = transpose(-10:5:10);
 set(gca,'XTick',xt);
 set(gca,'YTick',yt);
 set(gca,'YTickLabel',num2str(xt));

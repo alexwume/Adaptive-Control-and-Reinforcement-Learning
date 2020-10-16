@@ -34,7 +34,7 @@
 % end
 %    
 %% problem 3.5
-syms theta velocity x1 x2 x3 x4 xn1 xn2 xn3 xn4
+syms theta velocity x1 x2 x3 x4 xn1 xn2 xn3 xn4 n1
 
 
 f_x = [1, 0, 0.1 * cos(x4), -0.1* x3 * sin(x4); 0 , 1, 0.1 * sin(x4), 0.1* x3 * cos(x4); 0,0,1,0; 0,0,0,1];
@@ -52,28 +52,17 @@ state_N = [xn1; xn2; xn3; xn4];
 % state_N = [x1 + 0.1 * x3 * cos(x4); x2 + 0.1 * x3 * sin(x4); x3 + 0.1 * u1; x4 + 0.1 * u2];
 
 co_state = sym(zeros(4,1,N));
-co_state(:,:,N) = S * state_N - S * xg;
+co_state(:,:,N) = S * (state_N -  xg);
 c1 = sym(zeros(1,N)); c1(N) = co_state(1,1,N);
 c2 = sym(zeros(1,N)); c2(N) = co_state(2,1,N);
 c3 = sym(zeros(1,N)); c3(N) = co_state(3,1,N);
 c4 = sym(zeros(1,N)); c4(N) = co_state(4,1,N);
 
-u = -inv(R) * [0,0,0,0.1; 0,0,0.1,0] * co_state(:,:,N);
-u1 = u(1);
-u2 = u(2);
-% state_k_1 = [x1 + 0.1 * x3 * cos(x4); x2 + 0.1 * x3 * sin(x4); x3 + 0.1 * u1; x4 + 0.1 * u2];
+u = -inv(R) * [0,0,0.1,0; 0,0,0,0.1] * co_state(:,:,N);
+% plug in co_state(:,:,N) and represent u in terms of co_state(:,:, N - 1)
 
-co_state(:,:,N - 1) = Q * state_N_1 - Q * xg +  f_x.' * co_state(:,:,N);
-xn1 = x1 + 0.1 * x3 * cos(x4);
-xn2 = x2 + 0.1 * x3 * sin(x4);
-xn3 = x3 + 0.1 * u1;
-xn4 = x4 + 0.1 * u2;
-
-% co_state(1,1, N- 1) = x1 + 10 *(x1 + 0.1 * x3 *cos(x4)) - 110;
-% co_state(2,1, N- 1) = x2 + 10 *(x2 + 0.1 * x3 *sin(x4)) - 110;
-% co_state(3,1, N- 1) = x3 + 10 *(x3 + 0.1 * u1) + (cos(x4)*(10*(x1 + 0.1 * x3 * cos(x4)) - 100))/10 + (sin(x4)*(10*(x2 + 0.1 * x3 * sin(x4)) - 100))/10;
-% co_state(4,1, N- 1) = x4 + 10 *(x4 + 0.1 * u2)- (11*pi)/2 + (x3*cos(x4)*(10*(x2 + 0.1 * x3 * sin(x4)) - 100))/10 - (x3*sin(x4)*(10*(x1 + 0.1 * x3 * cos(x4)) - 100))/10;
-
+co_state(:,:,N - 1) = Q * (state_N_1 - xg) +  f_x.' * co_state(:,:,N);
+co_state(:,:,N - 1) = subs(co_state(:,:,N - 1), [xn1, xn2, xn3, xn4], [x1 + 0.1 * x3 * cos(x4), x2 + 0.1 * x3 * sin(x4), x3 + 0.1 * (-5 * x3), x4 + 0.1 * (-5 * x4)]);
 co_state(:,:,N - 1) = taylor(co_state(:,1,N - 1), [x1;x2;x3;x4],'ExpansionPoint', xg,'Order',2);
 
 %%
@@ -95,12 +84,11 @@ s31 = zeros(1,N); s31(1) = state(3,1,1);
 s41 = zeros(1,N); s41(1) = state(4,1,1);
 
 
-
 co_state = zeros(4,1,N);   
 c1 = zeros(1,N); c1(1) = 11 * s11(1) - 110;
-c2 = zeros(1,N);c2(1) = 11 * s21(1)  -110;
-c3 = zeros(1,N);c3(1) = s21(1) + 11 * s31(1) - 10;
-c4 = zeros(1,N);c4(1) = 11 * s41(1) - (11 * pi) / 2;
+c2 = zeros(1,N);c2(1) = 11 * s21(1) + s31(1) - 110;
+c3 = zeros(1,N);c3(1) = s21(1) + (61 * s31(1) / 10) - 10;
+c4 = zeros(1,N);c4(1) = 6* s41(1) - (11 * pi) / 2;
 
 u = zeros(2,1,N);
 u(:,:,1) = -inv(R) * [0,0,0,0.1; 0,0,0.1,0] * co_state(:,:,2);
@@ -114,12 +102,12 @@ u2 = zeros(1,N); u2(1) = u(2,1,1);
     s41(i) = state(4,1,i);
         
     c1(i) = 11 * s11(i) - 110;
-    c2(i) = 11 * s21(i)- 110;
-    c3(i) = s21(i) + 11 * s31(i) - 10;
-    c4(i) = 11 * s41(i) - (11 * pi) / 2;
+    c2(i) = 11 * s21(i) + s31(i) - 110;
+    c3(i) = s21(i) + (61 * s31(i) / 10) - 10;
+    c4(i) = 6* s41(i) - (11 * pi) / 2;
     co_state(:,:,i) = [c1(i);c2(i);c3(i);c4(i)];
     
-    u(:,:,i) = -inv(R) * [0,0,0,0.1; 0,0,0.1,0] * co_state(:,:,i);
+    u(:,:,i) = -inv(R) * [0,0,0.1,0; 0,0,0,0.1] * co_state(:,:,i);
     u1(i) = u(1,1,i);
     u2(i) = u(2,1,i);
  end
