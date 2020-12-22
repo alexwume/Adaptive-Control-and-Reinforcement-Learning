@@ -142,9 +142,9 @@ c = 0.11;
 a_hat = zeros(N,1);
 b_hat = zeros(N,1);
 c_hat = zeros(N,1);
-a_hat(1,1) = 0.1;
-b_hat(1,1) = 0.005;
-c_hat(1,1) = 0.1;
+a_hat(1,1) = 0.08;
+b_hat(1,1) = 0.1;
+c_hat(1,1) = 0.08;
 
 x = zeros(2,1,N);
 x(:,:,1) = [2;0];
